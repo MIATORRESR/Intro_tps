@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#parametro que elimina todo
+if [ "$1" == "-d" ]; then
+  pkill -f consolidar.sh
+   rm -rf ~/EPNro1
+   echo "Directorios eliminados y procesos detenidos"
+   exit
+fi
+
+#creo la variable de entorno previamente definida  para almacenar los datos que se registran  
+FILENAME="archivo_alumnos"
+export FILENAME
+
+#aplico el while para que no corte en una sola opcion y nos regresa al menu
+while true
+do
+  echo "Opciones del Menú"
+  echo "1) crear directorio"
+  echo "2) correr proceso"
+  echo "3) mostrar listado de alumnos del padrón"
+  echo "4) mostrar las 10 notas más altas"
+  echo "5) solicitar nro padron"
+  echo "6) salir"
+
+#read es un comando y -p es el parametro o flag que muestra por  el texto 
+read -p "se debe ingresar una de las opciones: " opcion 
+ 
+ case $opcion in
+
+#para no escribir toda la ruta use ~ un comando que me lleva a /home/usurario
+   1)
+     echo "Creando directorio..."
+     mkdir -p ~/EPNro1/Entrada ~/EPNro1/Salida ~/EPNro1/Procesando   
+       if [ -f  ./consolidar.sh ];then
+           cp ./consolidar.sh ~/EPNro1/consolidar.sh
+           echo "Script copiado"
+       else  
+           echo "Error: no se encontro archivo "
+       fi;;
+
+   2)
+     echo "corriendo proceso en background.."
+     cd ~/EPNro1
+     bash consolidar.sh > /dev/null 2>%1&
+     echo "proceso consolidar.sh iniciado"
+     ;;
+
+   3)
+     if [ -f ~/EPNro1/Salida/$FILENAME.txt ];then
+       sort -n -k1 ~/EPNro1/Salida/$FILENAME.txt
+     else
+       echo "Archivo no encontrado" 
+     fi;;
+
+   4)
+     echo "Las notas más altas son: "
+     ARCHIVO_NOTAS= ~/EPNro1/Salida/$FILENAME.txt
+       if [ -f "$ARCHIVO_NOTAS" ];then 
+        sort  -nrk4 "$ARCHIVO_NOTAS" | head -n 10
+       else 
+        echo "No se encontro archivo.."
+       fi;;
+
+   5) if(condition) defino como archivo 
+    echo "Ingrese un nro de padrón: "
+    read PADRON
+    if [ -f ~/EPNro1/Salida/$FILENAME.txt ]; then
+       grep "$PADRON" ~/EPNro1/Salida/$FILENAME.txt
+    else
+       echo "Archivo no encontrado"
+    fi;;
+
+   6)
+     echo "Saliendo.. "
+     exit 0;;
+
+   esac
+done
